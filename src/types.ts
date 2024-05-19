@@ -1,7 +1,9 @@
 export interface SVGProps {
     src?: string,
     children?: React.ReactNode,
-    color?: string,
+    // Color props
+    colorize?: boolean,
+    colorProps?: ColorProps
     grayscale?: boolean,
 }
 
@@ -11,4 +13,9 @@ export interface HastNode {
     properties?: Record<string, any>;
     children?: HastNode[];
     value?: string;
+}
+
+export interface ColorProps {
+    omittedColors?: string[],
+    color: string
 }

@@ -1,7 +1,6 @@
-import { HastNode } from "../types";
+import { ColorProps, HastNode } from "../types";
 
-
-export default function colorizeSVG(element: HastNode, color: string) {
+export default function colorizeSVG(element: HastNode, props: ColorProps) {
     // const fillRegex =  new RegExp("fill=\"(.*?)\"");
     // const filteredSrc = src.replace(fillRegex, (match, group) => {
     //     const calculatedHex = calculateGrayscaleFromHex(group);
@@ -12,12 +11,20 @@ export default function colorizeSVG(element: HastNode, color: string) {
     // })
 
     // return filteredSrc;
+    // Cast props.omittedColors to array
+
+    // TODO: map color name to hexcode
+    props.omittedColors = props.omittedColors?.map(color => color.toLowerCase());
+    console.log(props)
+
     if(element.properties && element.properties.fill){
-        element.properties.fill = color
+        if(!(props.omittedColors && (props.omittedColors.includes(element.properties.fill.toLowerCase())))){
+            element.properties.fill = props.color
+        }
     }
 
     if(element.children){
-        element.children = element.children.map((child) => colorizeSVG(child, color));
+        element.children = element.children.map((child) => colorizeSVG(child, props));
     }
 
     return element

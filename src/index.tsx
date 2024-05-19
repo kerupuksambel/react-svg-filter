@@ -22,7 +22,7 @@ const hastToReact = (hastNode: HastNode, index?: number): React.ReactNode => {
     return React.createElement(tagName, { ...properties, key: properties?.key || index }, ...reactChildren);
   }
 
-const SVGFilter: React.FC<SVGProps> = ({ src, children, grayscale, color }) => {
+const SVGFilter: React.FC<SVGProps> = ({ src, children, grayscale, colorize, colorProps }) => {
     // TODO: handle external svg in src arg
     var elem: string|null = null;
     if (children) {
@@ -51,8 +51,12 @@ const SVGFilter: React.FC<SVGProps> = ({ src, children, grayscale, color }) => {
             parsedElem = grayscaleSVG(parsedElem);
         }
 
-        if(color !== undefined){
-            parsedElem = colorizeSVG(parsedElem, color);
+        if(colorize !== undefined){
+            if(colorProps){
+                parsedElem = colorizeSVG(parsedElem, colorProps);
+            }else{
+                throw new Error('`colorProps` isn\'t set. Please set `colorProps` if the filter set to `color`.');
+            }
         }
 
         // Convert back to ReactNode
