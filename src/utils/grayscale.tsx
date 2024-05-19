@@ -1,9 +1,11 @@
-const calculateGrayscaleFromHex = (color: string) => {
+import { HastNode } from "../types";
+
+const calculateGrayscale = (color: string) => {
     // Calculate grayscale RPG from color
     color = color.replace(/^#/, '').toLowerCase();
 
     // Check if color match with RGB format
-    if (!(color.match(/^[a-fA-F0-9]{6}+$/))) {
+    if (!(color.match(/([a-fA-F0-9]{6})+/))) {
         // If not, try to convert the color code to hex
         if(hexFromColorConst(color)){
             color = hexFromColorConst(color) as string
@@ -49,15 +51,24 @@ const hexFromColorConst = (color: string) => {
     return colorList[color] || false
 }
 
-export default function grayscaleSVG(src: string) {
-    const fillRegex =  new RegExp("fill=\"(.*?)\"");
-    const filteredSrc = src.replace(fillRegex, (match, group) => {
-        const calculatedHex = calculateGrayscaleFromHex(group);
-        if(!calculatedHex) {
-            throw new Error("Invalid RGB hexcode or HTML color name. Module currently accepts RGB and HTML color names.");
-        }
-        return `fill=\"${calculatedHex}\"`
-    })
+export default function grayscaleSVG(element: HastNode) {
+    // const fillRegex =  new RegExp("fill=\"(.*?)\"");
+    // const filteredSrc = src.replace(fillRegex, (match, group) => {
+    //     const calculatedHex = calculateGrayscaleFromHex(group);
+    //     if(!calculatedHex) {
+    //         throw new Error("Invalid RGB hexcode or HTML color name. Module currently accepts RGB and HTML color names.");
+    //     }
+    //     return `fill=\"${calculatedHex}\"`
+    // })
 
-    return filteredSrc;
+    // return filteredSrc;
+    if(element.properties && element.properties.fill){
+        element.properties.fill = calculateGrayscale(element.properties.fill as string)
+    }
+
+    if(element.children){
+        element.children = element.children.map((child) => grayscaleSVG(child));
+    }
+
+    return element
 }

@@ -1,8 +1,25 @@
 import * as React from 'react';
 import { parse } from 'svg-parser';
-import { SVGProps } from './types';
+import { HastNode, SVGProps } from './types';
 import ReactDomServer from 'react-dom/server';
 import grayscaleSVG from './utils/grayscale';
+
+const hastToReact = (hastNode: HastNode, index?: number): React.ReactNode => {
+    if(!index) index = 0;
+    if (hastNode.type === 'text') {
+      return hastNode.value || null;
+    }
+  
+    const { tagName = 'div', properties, children = [] } = hastNode;
+  
+    if (!tagName) {
+      return null;
+    }
+  
+    const reactChildren = children.map((child, index) => hastToReact(child, index));
+  
+    return React.createElement(tagName, { ...properties, key: properties?.key || index }, ...reactChildren);
+  }
 
 const SVGFilter: React.FC<SVGProps> = ({ src, children, filter, grayscale, color }) => {
     // TODO: handle external svg in src arg
@@ -11,9 +28,8 @@ const SVGFilter: React.FC<SVGProps> = ({ src, children, filter, grayscale, color
         if(React.isValidElement(children) && children.type === 'svg'){
             // const div = document.createElement('div');
             const renderedChildren = ReactDomServer.renderToStaticMarkup(children);
-            console.log(renderedChildren)
             elem = renderedChildren
-            // elem = div.innerHTML;
+            // elem = div.innerHTML; 
         }else{
             throw new Error("Invalid SVG file.")
         }
@@ -21,14 +37,28 @@ const SVGFilter: React.FC<SVGProps> = ({ src, children, filter, grayscale, color
         elem = null;
     }
 
+    
+
     // Process element into HAST
     if(elem){
-        const parsedElem = parse(elem);
+        // Convert to HAST
+        var parsedElem = parse(elem) as HastNode;
 
-        console.log(parsedElem)
+        // Processing started here
+        if(filter === "grayscale"){
+            parsedElem = grayscaleSVG(parsedElem);
+        }
+
+        // Processing end
+
+        // Convert back to ReactNode
+        const resultElem = hastToReact(parsedElem);
+        
+        return resultElem;
     }
+
+    return <></>
     
-    return elem ? <>{elem}</> : <></>;
 }
 
 export default SVGFilter;
